@@ -385,6 +385,9 @@ export default function App() {
   const [passwordChangeError, setPasswordChangeError] = useState('');
   const [passwordChangeSuccess, setPasswordChangeSuccess] = useState('');
   const [showClearConfirm, setShowClearConfirm] = useState(false);
+  const [acceptedDataTreatment, setAcceptedDataTreatment] = useState(false);
+  const [showDataTreatmentModal, setShowDataTreatmentModal] = useState(false);
+  const [showUserManualModal, setShowUserManualModal] = useState(false);
 
   const [dbSelectedTable, setDbSelectedTable] = useState<'users' | 'expenses' | 'budget' | 'messages' | 'session'>('expenses');
   const [dbCopiedNotification, setDbCopiedNotification] = useState(false);
@@ -1818,6 +1821,10 @@ export default function App() {
                   setAuthError(lang === 'en' ? 'Please tell us your name.' : 'Por favor dinos tu nombre.');
                   return;
                 }
+                if (!acceptedDataTreatment) {
+                  setAuthError(lang === 'en' ? 'You must accept the Personal Data Treatment & Privacy Policy to register.' : 'Debes autorizar el Tratamiento de Datos Personales y Políticas de Privacidad para registrarte.');
+                  return;
+                }
                 const res = await handleRegisterUser(authUsername, authName, authPassword);
                 if (res.success) {
                   setAuthSuccessMsg(
@@ -1993,6 +2000,33 @@ export default function App() {
                 <div className="relative w-8 h-4 bg-slate-200 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-blue-600" />
               </label>
             </div>
+
+            {/* Checkbox Tratamiento de Datos (Ley 1581 de 2012) */}
+            {authMode === 'signup' && (
+              <div className="p-3 bg-slate-50/80 border border-slate-200 rounded-2xl flex items-start gap-2.5">
+                <input
+                  type="checkbox"
+                  id="acceptedDataTreatment"
+                  checked={acceptedDataTreatment}
+                  onChange={(e) => setAcceptedDataTreatment(e.target.checked)}
+                  className="mt-1 h-3.5 w-3.5 rounded-sm border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
+                />
+                <div className="text-left leading-tight">
+                  <label htmlFor="acceptedDataTreatment" className="text-[11px] font-bold text-slate-700 cursor-pointer select-none">
+                    {lang === 'en' 
+                      ? "I authorize the processing of my personal financial data" 
+                      : "Autorizo el Tratamiento de mis Datos Personales Financieros"}
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() => setShowDataTreatmentModal(true)}
+                    className="block text-[10px] text-blue-600 hover:text-blue-700 font-bold underline mt-0.5 transition cursor-pointer"
+                  >
+                    {lang === 'en' ? "Read Habeas Data & Privacy Policy" : "Ver Política de Privacidad (Ley 1581 de 2012)"}
+                  </button>
+                </div>
+              </div>
+            )}
 
             {authMode === 'signin' && (
               <div className="flex justify-end pt-1">
@@ -2268,6 +2302,16 @@ export default function App() {
                 <div className="p-1.5 bg-blue-600/10 text-blue-600 rounded-lg md:hidden">
                   <UserIcon className="w-3.5 h-3.5" />
                 </div>
+                <button
+                  type="button"
+                  onClick={() => setShowUserManualModal(true)}
+                  className="p-1.5 sm:p-2 text-slate-400 hover:text-blue-600 hover:bg-slate-100 dark:hover:bg-slate-850 rounded-lg transition cursor-pointer flex items-center justify-center gap-1"
+                  title={lang === 'en' ? 'User Manual & Data' : 'Manual de Manejo y Datos'}
+                >
+                  <HelpCircle className="w-4 h-4 text-blue-600" />
+                  <span className="hidden lg:inline text-xs font-bold text-slate-600 transition">{lang === 'en' ? 'Manual' : 'Manual'}</span>
+                </button>
+
                 <button
                   type="button"
                   onClick={() => setIsDarkMode(!isDarkMode)}
@@ -4060,6 +4104,302 @@ export default function App() {
               >
                 <Trash2 className="w-4 h-4" />
                 <span>{lang === 'en' ? 'Yes, Reset' : 'Sí, Borrar Todo'}</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* DATA TREATMENT / PRIVACY POLICY MODAL (Ley 1581 de 2012) */}
+      {showDataTreatmentModal && (
+        <div className="fixed inset-0 z-50 overflow-y-auto flex items-center justify-center p-4 bg-slate-900/70 backdrop-blur-xs animate-fadeIn">
+          <div className="bg-white rounded-3xl border border-slate-200 shadow-2xl max-w-2xl w-full p-6 sm:p-8 space-y-6 relative overflow-hidden animate-scaleIn max-h-[85vh] flex flex-col">
+            <div className="flex justify-between items-start border-b border-slate-100 pb-4 shrink-0">
+              <div className="flex items-center gap-3 text-blue-600">
+                <div className="p-2.5 bg-blue-50 rounded-2xl">
+                  <FileText className="w-6 h-6 text-blue-600" />
+                </div>
+                <div className="text-left">
+                  <h3 className="text-lg font-bold text-slate-900 leading-tight">
+                    {lang === 'en' ? 'Personal Data Treatment Policy' : 'Política de Tratamiento de Datos Personales'}
+                  </h3>
+                  <span className="text-[10px] text-slate-400 font-extrabold uppercase tracking-widest block mt-0.5">
+                    {lang === 'en' ? 'In Compliance with Habeas Data Standards' : 'De conformidad con la Ley 1581 de 2012 / Habeas Data'}
+                  </span>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowDataTreatmentModal(false)}
+                className="p-1.5 hover:bg-slate-100 rounded-full text-slate-400 hover:text-slate-705 transition cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="overflow-y-auto space-y-4 text-xs text-slate-600 leading-relaxed font-semibold pr-2 text-left flex-1">
+              <section className="space-y-1.5">
+                <h4 className="text-sm font-extrabold text-slate-805">
+                  {lang === 'en' ? '1. Scope and Controller of the Treatment' : '1. Ámbito de Aplicación y Responsable'}
+                </h4>
+                <p>
+                  {lang === 'en'
+                    ? 'This Authorization and Policy rule the processing of financial transaction records, credentials, budgets, and chat history of users inside the FinanzAsistente AI environment. The application acts as a processor and local administrator of your data, guaranteeing your right of Habeas Data.'
+                    : 'La presente política regula el almacenamiento, recolección y procesamiento de los registros de gastos, ingresos, presupuestos, credenciales de inicio de sesión e historial de chat de los usuarios dentro de la plataforma FinanzAsistente AI. La aplicación actúa como responsable y administradora de los datos personales ingresados, garantizando la seguridad bajo estrictos estándares de confidencialidad y control.'}
+                </p>
+              </section>
+
+              <section className="space-y-1.5">
+                <h4 className="text-sm font-extrabold text-slate-805">
+                  {lang === 'en' ? '2. Purpose of Data Collection' : '2. Finalidad de la Recolección y Procesamiento'}
+                </h4>
+                <p>
+                  {lang === 'en' ? 'Your personal financial information is processed strictly for the following actions:' : 'Sus datos personales y financieros son tratados única y exclusivamente para cumplir con las siguientes finalidades:'}
+                </p>
+                <ul className="list-disc pl-5 space-y-1 mt-1 text-slate-500 font-medium">
+                  <li>{lang === 'en' ? 'Structure and record manually entered daily expenses with category categorization.' : 'Registrar y organizar de forma estructurada sus egresos para la autogestión de sus finanzas corporativas o del día a día.'}</li>
+                  <li>{lang === 'en' ? 'Compute totals, statistical summaries, and dynamic alerts when you overpass categories configuration limits.' : 'Calcular indicadores en tiempo real, resúmenes analíticos mensuales y dar alertas dinámicas ante excesos de presupuesto.'}</li>
+                  <li>{lang === 'en' ? 'Process text prompts (via NLP) and receipt images (via Gemini Vision SDK) in real-time to automate data inputs.' : 'Procesar su lenguaje coloquial (NLP) y fotos de tiquetes de compra (Gemini Vision) para clasificar y rellenar automáticamente sus transacciones.'}</li>
+                  <li>{lang === 'en' ? 'Provide personalized and dynamic saving hacks, chats, challenges, and advices filtered by your history database.' : 'Responder consultas y suministrar consejos prácticos, retos de ahorro y tips financieros contextualizados en base a su historial.'}</li>
+                  <li>{lang === 'en' ? 'Synchronize your encrypted credentials and user statistics across multiple devices if Cloud Sync is active.' : 'Guardar y sincronizar tus credenciales encriptadas y transacciones entre dispositivos de forma segura si activas el almacenamiento en la nube.'}</li>
+                </ul>
+              </section>
+
+              <section className="space-y-1.5">
+                <h4 className="text-sm font-extrabold text-slate-805">
+                  {lang === 'en' ? '3. Data Storage (Where is your info saved?)' : '3. Dónde se Guardan tus Datos y Medidas de Privacidad'}
+                </h4>
+                <p>
+                  {lang === 'en'
+                    ? 'FinanzAsistente operates under a secure Local-First architecture by default. If you interact offline or without logging in, your data is saved solely in the private memory space of your browser (localStorage). Under this model, no external servers get access to your raw database. On the other hand, if you toggle Cloud Storage, your records are transmitted securely to a protected Google Cloud Firebase Firestore database, filtered under your user hash so that only you have permission to query, access, or modify them.'
+                    : 'La plataforma implementa un esquema dual de persistencia enfocado en la privacidad del usuario. Por defecto, funciona bajo el paradigma Local-First, lo que significa que si prefiere operar en modo local o sin loguearse todas las transacciones se almacenan directamente y de forma física en la memoria privada de su propio navegador de internet (localStorage). Bajo este modelo, ningún tercero o servidor centralizado puede recopilar sus registros. Por su parte, si activa la casilla "Sincronización en la Nube", los registros se transmitirán de forma encriptada a una base de datos segura de Google Cloud (Firebase Firestore), filtrada e indexada bajo el Hash de su usuario para garantizar que nadie más tenga acceso a sus números.'}
+                </p>
+              </section>
+
+              <section className="space-y-1.5">
+                <h4 className="text-sm font-extrabold text-slate-805">
+                  {lang === 'en' ? '4. Your Rights and Data Deletion (Habeas Data)' : '4. Derechos del Titular y Supresión de Datos'}
+                </h4>
+                <p>
+                  {lang === 'en'
+                    ? 'Under global personal data policies (like Colombian Law 1581 of 2012), you remain the absolute owner of your information. You hold the right to access, edit, update, retrieve, or completely delete your profile database. FinanzAsistente includes an action button called "Reset All" inside your Settings directory, allowing you to trigger a complete purge that wipes clean every record from your localStorage space and Firebase Firestore database instantly.'
+                    : 'De acuerdo con la legislación sobre protección de datos personales (incluyendo la Ley 1581 de 2012 de Colombia), usted es el único dueño de su información y tiene el derecho constitucional de conocer, actualizar, rectificar y suprimir sus registros en cualquier momento. Para facilitar el ejercicio de este derecho, FinanzAsistente incluye una herramienta de "Acciones de Datos" en el menú de Ajustes, la cual permite realizar un borrado total inmediato que purgará permanentemente toda su información del navegador e instancias en la nube (Firestore) en un solo clic, sin dejar rastros.'}
+                </p>
+              </section>
+
+              <section className="space-y-1.5 bg-slate-50 p-3.5 rounded-2xl border border-slate-100">
+                <p className="text-[11px] font-bold text-slate-700">
+                  {lang === 'en'
+                    ? '✓ By creating an account, you authorize the processing of your data strictly for internal calculations and conversational support within the limits details of this policy.'
+                    : '✓ Al crear tu cuenta e ingresar datos a la aplicación, aceptas y autorizas de forma voluntaria, libre e informada el tratamiento de tus datos financieros únicamente para las rutinas de cálculo interno y el soporte conversacional del FinanzAsistente.'}
+                </p>
+              </section>
+            </div>
+
+            <div className="flex gap-3 justify-end pt-4 border-t border-slate-100 shrink-0">
+              <button
+                type="button"
+                onClick={() => {
+                  setAcceptedDataTreatment(true);
+                  setShowDataTreatmentModal(false);
+                }}
+                className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-xl shadow-md shadow-blue-600/10 transition cursor-pointer flex items-center gap-1.5"
+              >
+                <Check className="w-4 h-4" />
+                <span>{lang === 'en' ? 'Authorize and Accept' : 'Autorizar y Aceptar'}</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* USER MANUAL INTERACTIVE BOOK MODAL */}
+      {showUserManualModal && (
+        <div className="fixed inset-0 z-50 overflow-y-auto flex items-center justify-center p-4 bg-slate-900/70 backdrop-blur-xs animate-fadeIn">
+          <div className="bg-white rounded-3xl border border-slate-200 shadow-2xl max-w-4xl w-full p-6 sm:p-8 space-y-6 relative overflow-hidden animate-scaleIn max-h-[90vh] flex flex-col">
+            
+            {/* Header */}
+            <div className="flex justify-between items-start border-b border-slate-100 pb-4 shrink-0">
+              <div className="flex items-center gap-3 text-blue-600">
+                <div className="p-2.5 bg-blue-50 rounded-2xl">
+                  <HelpCircle className="w-6 h-6 text-blue-600 animate-bounce" />
+                </div>
+                <div className="text-left">
+                  <h3 className="text-lg font-bold text-slate-900 leading-tight">
+                    {lang === 'en' ? 'Interactive Guide & User Manual' : 'Guía de Manejo e Instrucciones de Uso'}
+                  </h3>
+                  <span className="text-[10px] text-slate-400 font-extrabold uppercase tracking-widest block mt-0.5">
+                    {lang === 'en' ? 'Learn to master your personal finance platform' : 'Aprende a dominar tu herramienta FinanzAsistente AI'}
+                  </span>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowUserManualModal(false)}
+                className="p-1.5 hover:bg-slate-100 rounded-full text-slate-400 hover:text-slate-705 transition cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Manual Body */}
+            <div className="overflow-y-auto space-y-6 text-xs text-slate-600 leading-relaxed pr-2 text-left flex-1 font-semibold">
+              
+              {/* Introduction Bento Grid */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="p-4 bg-blue-50/50 border border-blue-100 rounded-2xl space-y-2">
+                  <div className="flex items-center gap-2 text-blue-700">
+                    <Wallet className="w-4 h-4 shrink-0" />
+                    <h4 className="font-extrabold text-slate-800 text-xs uppercase tracking-wide">
+                      {lang === 'en' ? 'What is FinanzAsistente AI?' : '¿Qué es FinanzAsistente AI?'}
+                    </h4>
+                  </div>
+                  <p className="text-[11px] text-slate-600 font-medium">
+                    {lang === 'en'
+                      ? 'It is an offline-first financial platform empowered with Gemini AI. It allows you to log hourly expenses, define spending limits/budgets per categories ($ COP) and audit your money conversations with an artificial helper.'
+                      : 'Es un gestor inteligente de finanzas personales que opera con filosofía Local-First y combina la potencia de la Inteligencia Artificial de Google (Gemini) para auditar, automatizar e interpretar la salud de sus cuentas mensuales en pesos colombianos ($ COP) u otras divisas.'}
+                  </p>
+                </div>
+
+                <div className="p-4 bg-emerald-50/50 border border-emerald-100 rounded-2xl space-y-2">
+                  <div className="flex items-center gap-2 text-emerald-700">
+                    <Database className="w-4 h-4 shrink-0" />
+                    <h4 className="font-extrabold text-slate-800 text-xs uppercase tracking-wide">
+                      {lang === 'en' ? 'Where is my information stored?' : '¿Dónde se guarda tu información?'}
+                    </h4>
+                  </div>
+                  <p className="text-[11px] text-slate-600 font-medium">
+                    {lang === 'en'
+                      ? 'By default, everything lives privately in your browser (LocalStorage) so no data leaves your command. If you activate Cloud Sincronization, we synchronize statistics transparently into Google Firestore (Cloud Run database) based on your user.'
+                      : 'Por defecto, de forma local y offline en el almacenamiento privado de su navegador de internet (localStorage). Si prefiere sincronizar sus estadísticas de forma permanente y entre múltiples dispositivos, el sistema sincroniza su perfil con la base de datos centralizada de Google Firestore (en la nube) asociada a su usuario.'}
+                  </p>
+                </div>
+              </div>
+
+              {/* Core Features Accordion list */}
+              <div className="space-y-4">
+                <h4 className="text-xs font-black text-slate-800 uppercase tracking-widest border-b border-slate-100 pb-1.5 flex items-center gap-2">
+                  <Activity className="w-4 h-4 text-indigo-505" />
+                  <span>{lang === 'en' ? 'Core Operation & Smart Features' : 'Operaciones Esenciales y Funcionalidades Inteligentes'}</span>
+                </h4>
+
+                {/* Feature 1: Manual vs Smart Text Inputs */}
+                <div className="space-y-1.5">
+                  <div className="flex items-center gap-2 text-slate-800">
+                    <span className="w-2.5 h-2.5 rounded-full bg-blue-600 shrink-0" />
+                    <h5 className="font-extrabold text-xs">{lang === 'en' ? '1. Adding Expenses (Manual & Intelligent NLP)' : '1. Alimentación de Gastos (Manual e Ingreso NLP Coloquial)'}</h5>
+                  </div>
+                  <div className="pl-4 space-y-1 text-slate-500 font-medium">
+                    <p>
+                      <strong>{lang === 'en' ? 'Manual Input : ' : 'Entrada Manual: '}</strong>
+                      {lang === 'en'
+                        ? 'Under the Dashboard section, use the left side form to type description, select custom Category, select Expense Date and add specific tags.'
+                        : 'En la tarjeta de la izquierda del panel, digita la descripción, categoría, valor numérico de tu compra y añade etiquetas útiles para organizar tus egresos.'}
+                    </p>
+                    <p className="mt-1">
+                      <strong>{lang === 'en' ? 'Natural Language Input : ' : 'Entrada Inteligente por Lenguaje Natural: '}</strong>
+                      {lang === 'en'
+                        ? 'Just paste or write free text like "Yesterday paid 35000 cop on transport food" and press Enter. Gemini AI automatically parses and returns a structured record (Amount: $35,000, Category: Transportation) for your rapid validation.'
+                        : 'Simplemente redacta de forma coloquial un párrafo en la barra inteligente (ej. "Ayer almorcé una bandeja paisa deliciosa por 28 mil pesos en el portal") y FinanzAsistente interpretará el valor ($28.000), la fecha (el día de ayer) y la categoría (Alimentación) de forma instantánea.'}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Feature 2: Vision Image Receipts */}
+                <div className="space-y-1.5">
+                  <div className="flex items-center gap-2 text-slate-800">
+                    <span className="w-2.5 h-2.5 rounded-full bg-blue-600 shrink-0" />
+                    <h5 className="font-extrabold text-xs">{lang === 'en' ? '2. Optical Receipt Camera parsing with Gemini Vision' : '2. Lector Óptico de Fotos de Recibos y Facturas con Gemini Vision'}</h5>
+                  </div>
+                  <div className="pl-4 text-slate-500 font-medium">
+                    <p>
+                      {lang === 'en'
+                        ? 'You can drag-and-drop or select any file snapshot of your physical market receipt. Pressing "Analyze Photo" leverages Gemini Vision SDK to extract: establishment name, purchase date, total amount, and item breakdown. You can select individual item rows to register selective items with a single button.'
+                        : 'Sube una fotografía de tu recibo físico de mercado, combustible o restaurante. Presiona "Analizar Foto con AI" y de forma automatizada la Inteligencia Artificial escaneará y extraerá: el nombre del negocio, la fecha, el importe total, y un listado línea por línea de los productos adquiridos. Podrás elegir del listado de artículos cuáles deseas incorporar a tu histórico con un clic.'}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Feature 3: Budgets */}
+                <div className="space-y-1.5">
+                  <div className="flex items-center gap-2 text-slate-800">
+                    <span className="w-2.5 h-2.5 rounded-full bg-blue-600 shrink-0" />
+                    <h5 className="font-extrabold text-xs">{lang === 'en' ? '3. Budget Controls & Overspending Alerts' : '3. Configuración de Presupuestos y Semáforos de Límites'}</h5>
+                  </div>
+                  <div className="pl-4 text-slate-550 space-y-1 font-medium">
+                    <p>
+                      {lang === 'en'
+                        ? 'Using the "Settings" tab, configure your General Monthly Budget and share specific limits for sub-categories. The dashboard maps dynamic charts showing real-time distribution percentages and triggers orange warning tags if category limits get exceeded.'
+                        : 'En la pestaña "Ajustes", configura tu Presupuesto Mensual Global y subdivídelo en las categorías operativas (Alimentación, Tecnología, Hogar, etc.). El panel principal y los gráficos adaptarán semáforos de advertencia en naranja si el porcentaje de ejecución rebasa tus metas financieras.'}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Feature 4: AI Advisor Chats */}
+                <div className="space-y-1.5">
+                  <div className="flex items-center gap-2 text-slate-800">
+                    <span className="w-2.5 h-2.5 rounded-full bg-blue-600 shrink-0" />
+                    <h5 className="font-extrabold text-xs">{lang === 'en' ? '4. Chat with your Smart AI Financial Butler' : '4. Consultas y Chat Auditor Permanente con la IA'}</h5>
+                  </div>
+                  <div className="pl-4 text-slate-500 font-medium">
+                    <p>
+                      {lang === 'en'
+                        ? 'Navigate to "AI Advisor" tab to audit. You have three quick-auditing triggers (major expenditures, saving hacks, and saving weekly challenges), or query anything to the prompt box. Gemini processes the query holding your records context to resolve specific questions securely.'
+                        : 'En la pestaña de "Asesor AI" dispones de tres disparadores de auditoría automáticos (analizar mayor nivel de gastos, consejos prácticos rápidos de ahorro, y desafíos semanales), además de una barra de chat libre. La IA de Gemini analizará de forma segura tus transacciones previas para responderte preguntas de tus números exactos en segundos.'}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Database Inspector */}
+                <div className="space-y-1.5">
+                  <div className="flex items-center gap-2 text-slate-800">
+                    <span className="w-2.5 h-2.5 rounded-full bg-blue-600 shrink-0" />
+                    <h5 className="font-extrabold text-xs">{lang === 'en' ? '5. Database Inspector' : '5. Inspector Físico de Base de Datos (JSON)'}</h5>
+                  </div>
+                  <div className="pl-4 text-slate-500 font-medium">
+                    <p>
+                      {lang === 'en'
+                        ? 'Located at Settings, it maps the raw JSON storage of every collection (expenses, users, messages, sessions). You can filter contents, copy JSON details to clipboard, and reset or restore demo states with absolute transparency.'
+                        : 'En la base de la pestaña de Ajustes se ubica un inspector físico interactivo de datos. Podrás examinar el JSON en crudo de tu información del navegador y de la nube (gastos cargados, historiales de chat, límites de presupuesto) para copiarlo al portapapeles, o borrarlo todo, brindando máxima transparencia.'}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Data Treatment Integration Shortcut */}
+              <div className="p-4 bg-slate-50 border border-slate-200 rounded-2xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                <div className="space-y-1 flex-1">
+                  <h5 className="font-black text-slate-800 text-xs flex items-center gap-1.5 leading-none">
+                    <FileText className="w-4 h-4 text-blue-600" />
+                    {lang === 'en' ? 'Habeas Data & Protection' : 'Habeas Data & Protección de Datos Personales'}
+                  </h5>
+                  <p className="text-[10px] text-slate-505 font-medium">
+                    {lang === 'en'
+                      ? 'We implement robust measures to protect your rights ( Colombian Law 1581 of 2012). Click to check detailed handling, processor actions, and deletion options.'
+                      : 'Implementamos estrictas directrices de acuerdo a la Ley 1581 de 2012 para salvaguardar tu privacidad financiera. Consulta los detalles de control, supresión y procesamiento.'}
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowUserManualModal(false);
+                    setShowDataTreatmentModal(true);
+                  }}
+                  className="px-3.5 py-1.5 bg-slate-900 border border-slate-950 text-white hover:bg-slate-800 hover:-translate-y-0.5 text-[10px] duration-150 transition-all font-bold rounded-xl shadow-md cursor-pointer shrink-0"
+                >
+                  {lang === 'en' ? 'Display Data Treatment Policy' : 'Consultar Autorización de Datos'}
+                </button>
+              </div>
+            </div>
+
+            {/* Footer buttons */}
+            <div className="flex gap-3 justify-end pt-4 border-t border-slate-100 shrink-0">
+              <button
+                type="button"
+                onClick={() => setShowUserManualModal(false)}
+                className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-xl shadow-md shadow-blue-600/10 transition cursor-pointer"
+              >
+                {lang === 'en' ? 'Got it' : 'Entendido'}
               </button>
             </div>
           </div>
