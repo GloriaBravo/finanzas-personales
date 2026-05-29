@@ -43,7 +43,8 @@ import {
   Languages,
   AlertTriangle,
   Sun,
-  Moon
+  Moon,
+  Menu
 } from 'lucide-react';
 import { CATEGORIES, INITIAL_EXPENSES, SUGGESTED_BUDGET_TOTAL, DEFAULT_CATEGORY_BUDGETS } from './constants';
 import { Expense, Budget, CategoryBudget, Message, ParsedExpenseResponse, ReceiptItem, AnalyzedReceiptResponse, User } from './types';
@@ -388,6 +389,7 @@ export default function App() {
   const [acceptedDataTreatment, setAcceptedDataTreatment] = useState(false);
   const [showDataTreatmentModal, setShowDataTreatmentModal] = useState(false);
   const [showUserManualModal, setShowUserManualModal] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const [dbSelectedTable, setDbSelectedTable] = useState<'users' | 'expenses' | 'budget' | 'messages' | 'session'>('expenses');
   const [dbCopiedNotification, setDbCopiedNotification] = useState(false);
@@ -2238,7 +2240,7 @@ export default function App() {
           </div>
 
           <div className="flex items-center gap-3">
-            <nav className="flex space-x-1" aria-label="Tabs Principal">
+            <nav className="hidden md:flex space-x-1" aria-label="Tabs Principal">
               <button
                 onClick={() => setActiveTab('dashboard')}
                 className={`px-2.5 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-medium transition-all ${
@@ -2299,38 +2301,182 @@ export default function App() {
                   <span className="text-xs font-bold text-slate-800">{currentUser.name}</span>
                   <span className="text-[9px] text-slate-500 uppercase tracking-wider">@{currentUser.username}</span>
                 </div>
-                <div className="p-1.5 bg-blue-600/10 text-blue-600 rounded-lg md:hidden">
-                  <UserIcon className="w-3.5 h-3.5" />
-                </div>
-                <button
-                  type="button"
-                  onClick={() => setShowUserManualModal(true)}
-                  className="p-1.5 sm:p-2 text-slate-400 hover:text-blue-600 hover:bg-slate-100 dark:hover:bg-slate-850 rounded-lg transition cursor-pointer flex items-center justify-center gap-1"
-                  title={lang === 'en' ? 'User Manual & Data' : 'Manual de Manejo y Datos'}
-                >
-                  <HelpCircle className="w-4 h-4 text-blue-600" />
-                  <span className="hidden lg:inline text-xs font-bold text-slate-600 transition">{lang === 'en' ? 'Manual' : 'Manual'}</span>
-                </button>
+                
+                {/* Desktop-only action triggers */}
+                <div className="hidden md:flex items-center gap-1">
+                  <button
+                    type="button"
+                    onClick={() => setShowUserManualModal(true)}
+                    className="p-1.5 sm:p-2 text-slate-400 hover:text-blue-600 hover:bg-slate-100 dark:hover:bg-slate-850 rounded-lg transition cursor-pointer flex items-center justify-center gap-1"
+                    title={lang === 'en' ? 'User Manual & Data' : 'Manual de Manejo y Datos'}
+                  >
+                    <HelpCircle className="w-4 h-4 text-blue-600" />
+                    <span className="hidden lg:inline text-xs font-bold text-slate-600 transition">{lang === 'en' ? 'Manual' : 'Manual'}</span>
+                  </button>
 
+                  <button
+                    type="button"
+                    onClick={() => setIsDarkMode(!isDarkMode)}
+                    className="p-1.5 sm:p-2 text-slate-400 hover:text-blue-600 hover:bg-slate-100 dark:hover:bg-slate-850 rounded-lg transition cursor-pointer flex items-center justify-center"
+                    title={isDarkMode ? (lang === 'en' ? 'Light Mode' : 'Modo Claro') : (lang === 'en' ? 'Dark Mode' : 'Modo Oscuro')}
+                  >
+                    {isDarkMode ? <Sun className="w-4 h-4 text-amber-500" /> : <Moon className="w-4 h-4 text-slate-600" />}
+                  </button>
+                  <button
+                    onClick={handleLogout}
+                    className="p-1.5 sm:p-2 text-slate-400 hover:text-red-500 hover:bg-rose-50 rounded-lg transition cursor-pointer"
+                    title={t('logout')}
+                  >
+                    <LogOut className="w-4 h-4" />
+                  </button>
+                </div>
+
+                {/* Mobile Hamburger Button */}
                 <button
                   type="button"
-                  onClick={() => setIsDarkMode(!isDarkMode)}
-                  className="p-1.5 sm:p-2 text-slate-400 hover:text-blue-600 hover:bg-slate-100 dark:hover:bg-slate-850 rounded-lg transition cursor-pointer flex items-center justify-center"
-                  title={isDarkMode ? (lang === 'en' ? 'Light Mode' : 'Modo Claro') : (lang === 'en' ? 'Dark Mode' : 'Modo Oscuro')}
+                  onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                  className="md:hidden p-2 text-slate-500 hover:text-blue-600 hover:bg-slate-100 focus:outline-none rounded-xl transition cursor-pointer flex items-center justify-center"
+                  aria-label="Toggle menu"
                 >
-                  {isDarkMode ? <Sun className="w-4 h-4 text-amber-500" /> : <Moon className="w-4 h-4 text-slate-600" />}
-                </button>
-                <button
-                  onClick={handleLogout}
-                  className="p-1.5 sm:p-2 text-slate-400 hover:text-red-500 hover:bg-rose-50 rounded-lg transition cursor-pointer"
-                  title={t('logout')}
-                >
-                  <LogOut className="w-4 h-4" />
+                  <Menu className={`w-5.5 h-5.5 transform transition-transform duration-200 ${mobileMenuOpen ? 'rotate-90 text-blue-600' : ''}`} />
                 </button>
               </div>
             )}
           </div>
         </div>
+
+        {/* Mobile Dropdown Panel Drawer */}
+        <AnimatePresence>
+          {mobileMenuOpen && currentUser && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              exit={{ opacity: 0, height: 0 }}
+              transition={{ duration: 0.2 }}
+              className="md:hidden border-t border-slate-100 bg-white dark:bg-slate-900 shadow-inner overflow-hidden"
+            >
+              <div className="px-5 py-4 space-y-4">
+                {/* User Status Card */}
+                <div className="flex items-center justify-between p-3.5 bg-slate-50 dark:bg-slate-850 rounded-2xl border border-slate-150">
+                  <div className="flex items-center gap-2.5">
+                    <div className="p-2 bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-405 rounded-xl">
+                      <UserIcon className="w-4 h-4" />
+                    </div>
+                    <div className="text-left">
+                      <p className="text-xs font-black text-slate-800 dark:text-slate-100">{currentUser.name}</p>
+                      <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">@{currentUser.username}</p>
+                    </div>
+                  </div>
+                  
+                  <span className={`text-[9px] font-extrabold uppercase px-2 py-0.5 rounded-md ${cloudMode ? 'bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-305' : 'bg-slate-200 dark:bg-slate-800 text-slate-650 dark:text-slate-350'}`}>
+                    {cloudMode ? (lang === 'en' ? 'Cloud Synced' : 'En la Nube') : (lang === 'en' ? 'Local Only' : 'Solo Local')}
+                  </span>
+                </div>
+
+                {/* Grid items */}
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    onClick={() => {
+                      setActiveTab('dashboard');
+                      setMobileMenuOpen(false);
+                    }}
+                    className={`p-3.5 rounded-xl text-xs font-bold text-left transition flex items-center gap-2.5 cursor-pointer ${
+                      activeTab === 'dashboard'
+                        ? 'bg-blue-600 text-white'
+                        : 'bg-slate-50 dark:bg-slate-850 text-slate-705 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800'
+                    }`}
+                  >
+                    <Wallet className="w-4 h-4" />
+                    <span>{t('dashboard')}</span>
+                  </button>
+
+                  <button
+                    onClick={() => {
+                      setActiveTab('history');
+                      setMobileMenuOpen(false);
+                    }}
+                    className={`p-3.5 rounded-xl text-xs font-bold text-left transition flex items-center gap-2.5 cursor-pointer ${
+                      activeTab === 'history'
+                        ? 'bg-blue-600 text-white'
+                        : 'bg-slate-50 dark:bg-slate-850 text-slate-705 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800'
+                    }`}
+                  >
+                    <ArrowUpDown className="w-4 h-4" />
+                    <span>{t('history')}</span>
+                  </button>
+
+                  <button
+                    onClick={() => {
+                      setActiveTab('assistant');
+                      setMobileMenuOpen(false);
+                    }}
+                    className={`p-3.5 rounded-xl text-xs font-bold text-left transition flex items-center gap-2.5 col-span-2 cursor-pointer ${
+                      activeTab === 'assistant'
+                        ? 'bg-blue-600 text-white'
+                        : 'bg-indigo-50 dark:bg-indigo-950/40 text-indigo-750 dark:text-indigo-400 hover:bg-indigo-100/60 dark:hover:bg-indigo-900/40'
+                    }`}
+                  >
+                    <Sparkles className="w-4 h-4 text-amber-500 fill-amber-400" />
+                    <span>{t('assistant')} (Gemini Chat)</span>
+                  </button>
+
+                  <button
+                    onClick={() => {
+                      setActiveTab('config');
+                      setMobileMenuOpen(false);
+                    }}
+                    className={`p-3.5 rounded-xl text-xs font-bold text-left transition flex items-center gap-2.5 col-span-2 cursor-pointer ${
+                      activeTab === 'config'
+                        ? 'bg-blue-600 text-white'
+                        : 'bg-slate-50 dark:bg-slate-850 text-slate-705 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800'
+                    }`}
+                  >
+                    <SlidersHorizontal className="w-4 h-4" />
+                    <span>{t('settings')}</span>
+                  </button>
+                </div>
+
+                {/* Subactions footer */}
+                <div className="flex gap-2.5 pt-3 border-t border-slate-100 dark:border-slate-800">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setMobileMenuOpen(false);
+                      setShowUserManualModal(true);
+                    }}
+                    className="flex-1 py-2.5 bg-slate-50 dark:bg-slate-850 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-800 text-slate-655 dark:text-slate-300 text-xs font-bold rounded-xl transition flex items-center justify-center gap-1.5 cursor-pointer"
+                  >
+                    <HelpCircle className="w-4 h-4 text-blue-600" />
+                    <span>{lang === 'en' ? 'User Manual' : 'Ver Manual'}</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsDarkMode(!isDarkMode);
+                    }}
+                    className="px-4 py-2.5 bg-slate-50 dark:bg-slate-850 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-800 text-slate-655 dark:text-slate-300 rounded-xl transition flex items-center justify-center cursor-pointer"
+                    title={isDarkMode ? 'Light Mode' : 'Dark Mode'}
+                  >
+                    {isDarkMode ? <Sun className="w-4 h-4 text-amber-500" /> : <Moon className="w-4 h-4 text-slate-600" />}
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setMobileMenuOpen(false);
+                      handleLogout();
+                    }}
+                    className="px-4 py-2.5 bg-rose-50 dark:bg-rose-950/20 hover:bg-rose-100 dark:hover:bg-rose-900/35 border border-rose-200 dark:border-rose-900/50 text-rose-600 dark:text-rose-400 rounded-xl transition flex items-center justify-center cursor-pointer"
+                    title={t('logout')}
+                  >
+                    <LogOut className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </header>
 
       {/* COMPONENT BODY */}
