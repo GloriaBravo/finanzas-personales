@@ -20,6 +20,15 @@ const [token, username, repoName] = args;
 try {
   console.log("🚀 Iniciando proceso para subir tu código a GitHub...");
 
+  // 0. Intentar crear el repositorio en GitHub si aún no existe
+  console.log(`📡 Intentando crear el repositorio '${repoName}' de manera automática en tu cuenta...`);
+  try {
+    execSync(`curl -s -H "Authorization: token ${token}" -H "Accept: application/vnd.github.v3+json" https://api.github.com/user/repos -d "{\\"name\\":\\"${repoName}\\",\\"private\\":false,\\"description\\":\\"FinanzAsistente AI con procesamiento conversacional y lector visual\\"}"`, { stdio: "ignore" });
+    console.log("✅ Repositorio aprovisionado/verificado.");
+  } catch (apiErr) {
+    console.log("⚠️ No se pudo verificar/crear el repositorio automáticamente, procederemos con el push...");
+  }
+
   // 1. Inicializar git si no está inicializado
   if (!fs.existsSync(".git")) {
     console.log("📦 Inicializando repositorio Git local...");
