@@ -1,0 +1,87 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "User profile with password hash",
+      "type": "object",
+      "properties": {
+        "username": { "type": "string" },
+        "name": { "type": "string" },
+        "passwordHash": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["username", "name", "passwordHash"]
+    },
+    "Expense": {
+      "title": "Expense",
+      "description": "Financial expense tracking record",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "username": { "type": "string" },
+        "description": { "type": "string" },
+        "amount": { "type": "number" },
+        "category": { "type": "string" },
+        "date": { "type": "string", "format": "date" },
+        "tags": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      },
+      "required": ["id", "username", "description", "amount", "category", "date"]
+    },
+    "Budget": {
+      "title": "Budget",
+      "description": "User category budget plan",
+      "type": "object",
+      "properties": {
+        "username": { "type": "string" },
+        "total": { "type": "number" },
+        "byCategory": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "category": { "type": "string" },
+              "amount": { "type": "number" }
+            },
+            "required": ["category", "amount"]
+          }
+        }
+      },
+      "required": ["username", "total", "byCategory"]
+    },
+    "Message": {
+      "title": "Message",
+      "description": "Financial helper AI chat message log",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "username": { "type": "string" },
+        "role": { "type": "string", "enum": ["user", "model"] },
+        "text": { "type": "string" },
+        "createdAt": { "type": "number" },
+        "isQuickAction": { "type": "boolean" }
+      },
+      "required": ["id", "username", "role", "text", "createdAt"]
+    }
+  },
+  "firestore": {
+    "finanzas_usuarios/{username}": {
+      "schema": "User",
+      "description": "Stores user profiles keyed by unique, lowercase username"
+    },
+    "finanzas_gastos/{expenseId}": {
+      "schema": "Expense",
+      "description": "Stores expenses logged by a specific user"
+    },
+    "finanzas_presupuesto/{username}": {
+      "schema": "Budget",
+      "description": "Stores user financial budgets configuration"
+    },
+    "finanzas_mensajes/{messageId}": {
+      "schema": "Message",
+      "description": "Stores user AI chat message logs"
+    }
+  }
+}

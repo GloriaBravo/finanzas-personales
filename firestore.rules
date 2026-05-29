@@ -1,0 +1,54 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Global Safety Net
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Rules for User Profiles
+    match /finanzas_usuarios/{username} {
+      allow get: if username is string && username.size() <= 128;
+      allow list: if false; // Total scan prevention
+      allow create, update: if username is string && username.size() <= 128
+        && request.resource.data.username == username
+        && request.resource.data.name is string
+        && request.resource.data.passwordHash is string;
+      allow delete: if false;
+    }
+
+    // Rules for Expenses
+    match /finanzas_gastos/{expenseId} {
+      allow read, delete: if expenseId is string && expenseId.size() <= 128;
+      allow create, update: if expenseId is string && expenseId.size() <= 128
+        && request.resource.data.id == expenseId
+        && request.resource.data.username is string
+        && request.resource.data.description is string
+        && (request.resource.data.amount is int || request.resource.data.amount is float)
+        && request.resource.data.category is string
+        && request.resource.data.date is string;
+    }
+
+    // Rules for Budgets
+    match /finanzas_presupuesto/{username} {
+      allow read: if username is string && username.size() <= 128;
+      allow create, update: if username is string && username.size() <= 128
+        && request.resource.data.username == username
+        && (request.resource.data.total is int || request.resource.data.total is float)
+        && request.resource.data.byCategory is list;
+      allow delete: if false;
+    }
+
+    // Rules for Message logs
+    match /finanzas_mensajes/{messageId} {
+      allow read, delete: if messageId is string && messageId.size() <= 128;
+      allow create: if messageId is string && messageId.size() <= 128
+        && request.resource.data.id == messageId
+        && request.resource.data.username is string
+        && request.resource.data.role is string
+        && request.resource.data.text is string;
+      allow update: if false;
+    }
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "name": "FinanzAsistente AI",
+  "description": "Control de gastos personales y presupuesto mensual con un asesor financiero inteligente de Inteligencia Artificial.",
+  "requestFramePermissions": [
+    "camera"
+  ],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
